@@ -4,7 +4,7 @@ error_reporting(E_ALL);
 ini_set('display_errors', '1');
 ini_set('date.timezone','Asia/Shanghai');
 /**
-*   @author  王佩双 <250570889@qq.com>
+*   @author  王佩双 <250570889@qq.com> 11
 *   @version 1.0
 *   @var     微信商户支付整合类
 */
