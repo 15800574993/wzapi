@@ -1,6 +1,6 @@
 {
   "name": "wangzhan/wzapi",
-  "description": "Hello, Composer!",
+  "description": "常用助手方法",
   "type": "library",
   "require": {
     "php": ">=7.0"
@@ -12,6 +12,12 @@
       "email": "250570889@qq.com"
     }
   ],
+  "repositories": {
+      "packagist": {
+          "type": "composer",
+          "url": "https://packagist.phpcomposer.com"
+      }
+  },
   "minimum-stability": "stable",
   "autoload": {
     "psr-4": {
