@@ -1,10 +1,6 @@
 {
   "name": "wangzhan/wzapi",
   "description": "常用助手方法",
-  "type": "library",
-  "require": {
-    "php": ">=7.0"
-  },
   "license": "MIT",
   "authors": [
     {
@@ -12,10 +8,12 @@
       "email": "250570889@qq.com"
     }
   ],
-  "minimum-stability": "stable",
+  "require":{
+    "php": ">=7.0.0"
+  },
   "autoload": {
     "psr-4": {
-      "wangzhan\\wangzhan": "src/"
+      "wangzhan\\": "src/"
     }
   }
 }
