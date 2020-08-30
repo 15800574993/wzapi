@@ -12,16 +12,10 @@
       "email": "250570889@qq.com"
     }
   ],
-  "repositories": {
-      "packagist": {
-          "type": "composer",
-          "url": "https://packagist.phpcomposer.com"
-      }
-  },
   "minimum-stability": "stable",
   "autoload": {
     "psr-4": {
-      "wangzhan\\": "src/"
+      "wangzhan\\wangzhan": "src/"
     }
   }
 }
