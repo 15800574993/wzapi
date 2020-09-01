@@ -1,0 +1,189 @@
+<?php
+namespace wangzhan\upload\qiniu\Storage;
+
+use wangzhan\upload\qiniu\Http\Client;
+use wangzhan\upload\qiniu\Http\Error;
+
+final class FormUploader
+{
+
+    /**
+     * 上传二进制流到七牛, 内部使用
+     *
+     * @param $upToken    上传凭证
+     * @param $key        上传文件名
+     * @param $data       上传二进制流
+     * @param $config     上传配置
+     * @param $params     自定义变量，规格参考
+     *                    http://developer.qiniu.com/docs/v6/api/overview/up/response/vars.html#xvar
+     * @param $mime       上传数据的mimeType
+     *
+     * @return array    包含已上传文件的信息，类似：
+     *                                              [
+     *                                                  "hash" => "<Hash string>",
+     *                                                  "key" => "<Key string>"
+     *                                              ]
+     */
+    public static function put(
+        $upToken,
+        $key,
+        $data,
+        $config,
+        $params,
+        $mime,
+        $fname
+    ) {
+
+        $fields = array('token' => $upToken);
+
+        if ($key === null) {
+        } else {
+            $fields['key'] = $key;
+        }
+        //enable crc32 check by default
+        $fields['crc32'] = self::crc32_data($data);
+
+        if ($params) {
+            foreach ($params as $k => $v) {
+                $fields[$k] = $v;
+            }
+        }
+
+        list($accessKey, $bucket, $err) = self::explodeUpToken($upToken);
+        if ($err != null) {
+
+            return array(null, $err);
+        }
+        
+        $upHost = $config->getUpHost($accessKey, $bucket);
+
+        $response = Client::multipartPost($upHost, $fields, 'file', $fname, $data, $mime);
+        if (!$response->ok()) {
+            return array(null, new Error($upHost, $response));
+        }
+        return array($response->json(), null);
+    }
+
+    /**
+     * 上传文件到七牛，内部使用
+     *
+     * @param $upToken    上传凭证
+     * @param $key        上传文件名
+     * @param $filePath   上传文件的路径
+     * @param $config     上传配置
+     * @param $params     自定义变量，规格参考
+     *                    http://developer.qiniu.com/docs/v6/api/overview/up/response/vars.html#xvar
+     * @param $mime       上传数据的mimeType
+     *
+     * @return array    包含已上传文件的信息，类似：
+     *                                              [
+     *                                                  "hash" => "<Hash string>",
+     *                                                  "key" => "<Key string>"
+     *                                              ]
+     */
+    public static function putFile(
+        $upToken,
+        $key,
+        $filePath,
+        $config,
+        $params,
+        $mime
+    ) {
+
+
+        $fields = array('token' => $upToken, 'file' => self::createFile($filePath, $mime));
+        if ($key !== null) {
+            $fields['key'] = $key;
+        }
+
+        $fields['crc32'] = \Qiniu\crc32_file($filePath);
+
+        if ($params) {
+            foreach ($params as $k => $v) {
+                $fields[$k] = $v;
+            }
+        }
+        $fields['key'] = $key;
+        $headers = array('Content-Type' => 'multipart/form-data');
+
+        list($accessKey, $bucket, $err) = self::explodeUpToken($upToken);
+        if ($err != null) {
+            return array(null, $err);
+        }
+
+        $upHost = $config->getUpHost($accessKey, $bucket);
+
+        $response = Client::post($upHost, $fields, $headers);
+        if (!$response->ok()) {
+            return array(null, new Error($upHost, $response));
+        }
+        return array($response->json(), null);
+    }
+
+    private static function createFile($filename, $mime)
+    {
+        // PHP 5.5 introduced a CurlFile object that deprecates the old @filename syntax
+        // See: https://wiki.php.net/rfc/curl-file-upload
+        if (function_exists('curl_file_create')) {
+            return curl_file_create($filename, $mime);
+        }
+
+        // Use the old style if using an older version of PHP
+        $value = "@{$filename}";
+        if (!empty($mime)) {
+            $value .= ';type=' . $mime;
+        }
+
+        return $value;
+    }
+
+
+    /**
+     * 计算输入流的crc32检验码
+     *
+     * @param $data 待计算校验码的字符串
+     *
+     * @return string 输入字符串的crc32校验码
+     */
+    private static function crc32_data($data)
+    {
+        $hash = hash('crc32b', $data);
+        $array = unpack('N', pack('H*', $hash));
+        return sprintf('%u', $array["1"]);
+    }
+
+    /**
+     *  从uptoken解析accessKey和bucket
+     *
+     * @param $upToken
+     * @return array(ak,bucket,err=null)
+     */
+    private static function explodeUpToken($upToken)
+    {
+        $items = explode(':', $upToken);
+        if (count($items) != 3) {
+            return array(null, null, "invalid uptoken");
+        }
+        $accessKey = $items[0];
+        $putPolicy = json_decode(self::base64_urlSafeDecode($items[2]));
+        $scope = $putPolicy->scope;
+        $scopeItems = explode(':', $scope);
+        $bucket = $scopeItems[0];
+        return array($accessKey, $bucket, null);
+    }
+
+    /**
+     * 对提供的urlsafe的base64编码的数据进行解码
+     *
+     * @param string $str 待解码的数据，一般为字符串
+     *
+     * @return string 解码后的字符串
+     */
+    public static function base64_urlSafeDecode($str)
+    {
+        $find = array('-', '_');
+        $replace = array('+', '/');
+        return base64_decode(str_replace($find, $replace, $str));
+    }
+
+}

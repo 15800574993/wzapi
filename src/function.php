@@ -10,6 +10,7 @@ use wangzhan\other\MysqlModel;
 use wangzhan\Error;
 use wangzhan\pay\Alipay;
 use wangzhan\pay\Wxpay;
+use wangzhan\upload\Fileupload;
 /**
 *	@var 获取配置
 **/
@@ -26,12 +27,19 @@ if (!function_exists("wz_config")) {
 /**
 *	@var 错误信息
 **/
-if (!function_exists("wz_error")) {
-    function wz_error($text) {
+if (!function_exists("add_error")) {
+    function add_error($text) {
     	return (new Error("助手方法","11",$text));
     }
 }
-
+/**
+*	@var 获取错误信息
+**/
+if (!function_exists("wz_error")) {
+    function wz_error() {
+    	return Error::$error;
+    }
+}
 /**
 *	@var get或者post网络请求
 **/
@@ -71,14 +79,14 @@ if (!function_exists("add_sql_model")) {
     	if ($is_tp6) {
     		// 判断是否存在配置数据
     		if (!function_exists("config")){
-    			wz_error("助手函数不存在config(),是否是thinkphp6");
+    			add_error("助手函数不存在config(),是否是thinkphp6");
     		}
     		$database 	=	(config("database.connections.mysql.database"));
-    		$database 	=	($database)?$database:wz_error("数据库配置获取失败请检查/config/database.php里面的配置");
+    		$database 	=	($database)?$database:add_error("数据库配置获取失败请检查/config/database.php里面的配置");
     		try {
     			$data	 	=	\think\facade\Db::query(" show tables from `".$database."`");
     		} catch (Exception $e) {
-    			wz_error("数据库不存在[".$database."]");
+    			add_error("数据库不存在[".$database."]");
     		}
     		$tables 		=	array();
 			foreach ($data as $key => $value) {
@@ -215,11 +223,11 @@ if(!function_exists("wxpay_jssdk")) {
 	function wxpay_jssdk($data,$notify_url = "") {
   		$wxpay 			=	new_wxpay($notify_url);
 
-  		$body 			=	is_param($data,"body",null)?$data['body']:wz_error("微信支付参数body不能为空");
-  		$total_fee 		=	is_param($data,"total_fee",null)?$data['total_fee']:wz_error("微信支付金额错误total_fee");
-  		$out_trade_no 	=	is_param($data,"out_trade_no",null)?$data['out_trade_no']:wz_error("微信支付商户订单号错误out_trade_no");
-  		$product_id 	=	is_param($data,"product_id",null)?$data['product_id']:wz_error("微信支付错误product_id");
-  		$openid 		=	is_param($data,"openid",null)?$data['openid']:wz_error("微信支付错误openid");
+  		$body 			=	is_param($data,"body",null)?$data['body']:add_error("微信支付参数body不能为空");
+  		$total_fee 		=	is_param($data,"total_fee",null)?$data['total_fee']:add_error("微信支付金额错误total_fee");
+  		$out_trade_no 	=	is_param($data,"out_trade_no",null)?$data['out_trade_no']:add_error("微信支付商户订单号错误out_trade_no");
+  		$product_id 	=	is_param($data,"product_id",null)?$data['product_id']:add_error("微信支付错误product_id");
+  		$openid 		=	is_param($data,"openid",null)?$data['openid']:add_error("微信支付错误openid");
 		
 		return $wxpay->getParameters("",$body,$total_fee,$out_trade_no,$product_id,$openid);
 	}
@@ -241,10 +249,46 @@ if (!function_exists("wxpay_query"))  {
 	}
 }
 	
-
-
-
-
+// ================================ 	上传相关     		======================
+// 获取文件配置
+if (!function_exists("file_config"))  {
+	function file_config($key = "",$val = "") {
+		$file 			=	 wz_config("file");
+		if ($key) {
+    		return is_param($file,$key,$val);
+    	}
+		return $file;
+	}
+}
+// 上传全部
+if (!function_exists("upload_all"))  {
+	function upload_all($type = "",$file= "") {
+		$configFile 		=	file_config();
+		$configFile['type']	=	$type;
+		$config 			=	wz_config();
+		$config['file']		=	$configFile;
+		$UpFile 			=	new Fileupload($file,$config);
+		return $UpFile->upload();
+	}
+}
+// 上传本服务器
+if (!function_exists("upload_file"))  {
+	function upload_file($file= "") {
+		return upload_all("File",$file);
+	}
+}
+// 上传oss
+if (!function_exists("upload_oss"))  {
+	function upload_oss($file= "") {
+		return upload_all("Oss",$file);
+	}
+}
+// 上传七牛云
+if (!function_exists("upload_qiniu"))  {
+	function upload_qiniu($file= "") {
+		return upload_all("Qiniu",$file);
+	}
+}
 
 // ================================ 	微信公众号相关 		======================
 // 微信公众号类

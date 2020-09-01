@@ -33,7 +33,7 @@ class Ttapi {
 	public function __construct($config = array()){
 		$this->config 		=	$config;
 		if (!$this->config['tt_appid'] || !$this->config['tt_appsecret']) {
-	    	$this->error("缺少appid/appsecret配置");
+	    	return $this->error("缺少appid/appsecret配置");
 	    }
     }
 
@@ -49,7 +49,7 @@ class Ttapi {
 		// 检测文件是否存在
 		$tt_cache_token 		= 	($this->config['tt_cache_token'])?$this->config['tt_cache_token']:__DIR__."/tt_cache_token.json";
 		if(!file_exists($tt_cache_token)){
-		    $myfile 		= 	fopen($tt_cache_token, "w") or $this->error("无法打开文件！");
+		    $myfile 		= 	fopen($tt_cache_token, "w") or return $this->error("无法打开文件！");
 			$txt 			= 	array("token"=>"","time"=>0);
 			fwrite($myfile, json_encode($txt));
 			fclose($myfile);
@@ -72,7 +72,7 @@ class Ttapi {
 	        fclose($myfile);
 	        return $ret['data']['access_token'];
 	    }
-	    $this->error("无法获取token");
+	    return $this->error("无法获取token");
 	}
 
 
@@ -91,7 +91,7 @@ class Ttapi {
 		if (($ret['data'])) {
 	        return $ret['data'];
 	    }
-	    $this->error("无法获取token");
+	    return $this->error("无法获取token");
 	}
 
 	/**
@@ -110,7 +110,7 @@ class Ttapi {
 		if (($ret['data'])) {
 	        return $ret['data'];
 	    }
-	    $this->error("无法获取token");
+	    return $this->error("无法获取token");
 	}
 	/**
 	 * @var    登陆接口
@@ -129,7 +129,7 @@ class Ttapi {
 		if (($ret['data'])) {
 	        return $ret['data'];
 	    }
-        $this->error("无法获取数据");
+        return $this->error("无法获取数据");
 	}
 
 	/**
@@ -149,7 +149,7 @@ class Ttapi {
 		if (($ret['data'])) {
 	        return $ret['data'];
 	    }
-        $this->error("无法获取数据");
+        return $this->error("无法获取数据");
 	
 	}
 

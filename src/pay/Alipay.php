@@ -69,7 +69,7 @@ class Alipay {
 				return $this->NotifyAli();
 			  break;
 			default:
-                $this->error("支付宝支付类型不存在");
+                return $this->error("支付宝支付类型不存在");
 		}
     }
     /**
@@ -134,7 +134,7 @@ class Alipay {
         $result = $qrPay->qrPay($builder);
         $res    = $result->getResponse();
         if ($result->getTradeStatus() !== 'SUCCESS') {
-            $this->error($res);
+            return $this->error($res);
         }
 
         return $res->qr_code;
@@ -149,15 +149,15 @@ class Alipay {
         } elseif ($this->payData['trade_no']) {
             $builder->setTradeNo($this->payData['trade_no']);
         } else {
-            $this->error("订单号与交易号不能同时为空");
+            return $this->error("订单号与交易号不能同时为空");
         }
         $aop    = new AlipayTradeService($this->config);
         $result = $aop->Query($builder);
         if (!isset($result->code)){
-            $this->error("查询失败");
+            return $this->error("查询失败");
         }
         if ($result->code != '10000') {
-            $this->error($result->sub_msg);
+            return $this->error($result->sub_msg);
         }
         return json_decode(json_encode($result), true);
     }
@@ -174,17 +174,17 @@ class Alipay {
         }
 
         if (!isset($this->payData['out_trade_no']) && !isset($this->payData['trade_no'])) {
-            $this->error("订单号与微信交易号不能同时为空");
+            return $this->error("订单号与微信交易号不能同时为空");
         }
         $builder->setRefundAmount($this->payData['refund_fee']);
         $builder->setOutRequestNo($this->payData['refund_no']);
         $aop    = new AlipayTradeService($this->config);
         $result = $aop->Refund($builder);
         if (!isset($result->code)){
-            $this->error("退款申请失败");
+            return $this->error("退款申请失败");
         }
         if ($result->code != '10000'){
-            $this->error($result->msg . $result->sub_msg);
+            return $this->error($result->msg . $result->sub_msg);
         }
         return  [
             'out_trade_no'  => $result->out_trade_no,         //商户订单号码
@@ -201,11 +201,11 @@ class Alipay {
     	$builder                   = new AlipayTradeFastpayRefundQueryContentBuilder();
         $out_trade_no           = $this->payData['out_trade_no'] ?? $this->payData['trade_no'];
         if (!$out_trade_no) {
-            $this->error("订单号与支付宝交易号不能同时为空");
+            return $this->error("订单号与支付宝交易号不能同时为空");
         }
         $out_refund_no = $this->payData['out_refund_no'] ?? $this->payData['refund_no'];
         if (!$out_refund_no) {
-            $this->error("退款单号与支付宝退款交易号不能同时为空");
+            return $this->error("退款单号与支付宝退款交易号不能同时为空");
         }
         $builder->setOutTradeNo($out_trade_no);
         $builder->setOutRequestNo($out_refund_no);
@@ -213,11 +213,11 @@ class Alipay {
         $result = $aop->refundQuery($builder);
 
         if (!isset($result->alipay_trade_fastpay_refund_query_response->code)) {
-            $this->error("查询失败");
+            return $this->error("查询失败");
         }
         $result = $result->alipay_trade_fastpay_refund_query_response;
         if ($result->code != '10000'){
-            $this->error($result->msg . $result->sub_msg);
+            return $this->error($result->msg . $result->sub_msg);
         }
         return json_decode(json_encode($result), true);
     }

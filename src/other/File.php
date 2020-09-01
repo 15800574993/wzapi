@@ -64,7 +64,7 @@ class File{
     public function exe_file_info($path) {
     	if(!file_exists($path)){
     		$this->msg 		.=	"当前文件不存在".$path;
-            $this->error();
+            return $this->error();
 		}
         //将整个文件内容读入到一个字符串中
         $str                =   file_get_contents($path);
@@ -86,7 +86,7 @@ class File{
     public function exe_file_data($data) {
         if (!is_array($data)) {
             $this->msg      =   "请传入数组文件绝对路径";
-            $this->error();
+            return $this->error();
         }
     	foreach ($data as $key => $value) {
     		$this->exe_file_info($value);
@@ -105,7 +105,7 @@ class File{
         }
         if(!is_dir($dir)){
            $this->msg       .=  "目录不存在".$dir;
-           $this->error();
+           return $this->error();
         }
         // 扫描目录下的所有文件
         $filename = scandir($dir);
@@ -150,14 +150,14 @@ class File{
 
             if(!is_dir($dir)){
                $this->msg       .=  "目录不存在".$dir;
-               $this->error();
+               return $this->error();
             }
         }
         
         $html               =   $this->startHtml();
         if (!$this->fileArr) {
             $this->msg       .=  "数据不存在";
-            $this->error();
+            return $this->error();
         }
         // 生成标签名称
         $li             =   '<div class="docs-nav" id="main-nav-bar" style="top: 15px; position: fixed;"><ul id="list"> ';
@@ -229,10 +229,10 @@ Lis[maodian].className="on";var num=(60 * maodian)-300;oUl.scrollTop = num;};</s
                 $res        =   mkdir(iconv("UTF-8", "GBK", $dir."doc/"),0777,true); 
                 if (!$res){
                     $this->msg  =   "文件夹权限不足";
-                    $this->error();
+                    return $this->error();
                 }
             }
-            $DocFile            = fopen($dir."doc/"."index.html", "w") or $this->error("没有写入权限");
+            $DocFile            = fopen($dir."doc/"."index.html", "w") or return $this->error("没有写入权限");
             fwrite($DocFile, $html);
             fclose($DocFile);
         }
@@ -438,11 +438,11 @@ Lis[maodian].className="on";var num=(60 * maodian)-300;oUl.scrollTop = num;};</s
         // 判断动作是否存在
         if (!$file['action']) {
             $this->msg      .=  "当前请求的地址不存在或者为空".PHP_EOL;
-            $this->error();
+            return $this->error();
         }
         if (!$file['name']) {
             $this->msg      .=  "当前请求的接口名称不存在或者为空".PHP_EOL;
-            $this->error();
+            return $this->error();
         }
         $fileArr                =   $this->fileArr;
         $fileArr[]              =   $file;

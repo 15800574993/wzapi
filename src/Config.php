@@ -100,6 +100,41 @@ class Config {
 	        // 回掉地址
 	        "notify_url"			=> "",
 	    ],
+	    // 文件上传
+	    'file' 				=>[
+	    	"type"					=>	"Oss",		//	上传配置   默认上传当前服务器 或者 File/Oss/Cos/Qiniu
+	    	"path"					=>	"",			//	本地服务器保存路径
+	    	"max"					=>	20000000,	//	文件大小 
+	    	"file_type"				=>	[			//	可以上传的文件类型
+	    		"image/jpg","image/png","image/jpeg"
+	    	],
+	    	"url" 					=>	"http://www.baidu.com/",			//  域名
+	    	"delete"				=>	0,									//	是否删除服务器上传文件
+	    	'oss'					=>	[
+			    'accessId'     			=> '',
+			    'accessSecret' 			=> '',
+			    'bucket'       			=> '',
+			    'endpoint'     			=> '',
+			    "key"					=>	"text/",		//	上传文件位置
+			    'url'          			=> '',
+	    	],
+	    	"qiniu" 				=>	[
+	    		"accessKey"				=>	"",
+	    		"secretKey"				=>	"",
+	    		"bucket"				=>	"",
+	    		"key"					=>	"",		//	上传文件位置
+	    		"url"					=>	"",
+	    	],
+	    	"cos"					=>	[
+	    		"secretId"				=>	"",		//	"云 API 密钥 SecretId";
+	    		"secretKey"				=>	"",		//	"云 API 密钥 SecretKey";
+	    		"bucket"				=>	"",		//	存储桶名称 格式：BucketName-APPID
+	    		"key"					=>	"",		//	上传文件位置
+	    		"region"				=>	"",		//	设置一个默认的存储桶地域
+	    		"url"					=>	"https://res.appgan.com/",
+	    	],
+
+	    ],
 
 
 

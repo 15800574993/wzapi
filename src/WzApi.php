@@ -14,6 +14,7 @@ use wangzhan\other\MysqlModel;
 use wangzhan\other\File;
 use wangzhan\pay\Alipay;
 use wangzhan\pay\Wxpay;
+use wangzhan\upload\Fileupload;
 /**
 *   @author  王佩双 <250570889@qq.com>
 *   @version 1.0
@@ -30,6 +31,9 @@ class WzApi {
     public    $error;
     public static $wz_config;
 	public function __construct($setConfig = array()){
+        if (!$setConfig) {
+            $setConfig          =   $this->getInitConfig();
+        }
 		// 更新配置
      	$this->config 			=	new Config();
      	$this->config->setConfig($setConfig);
@@ -65,6 +69,20 @@ class WzApi {
         require_once __DIR__."/function.php";      
     }
 
+    public function wz_error() {
+        return Error::$error;
+    }
+
+    // 自动获取配置文件
+    public function getInitConfig() {
+        if (!function_exists("config")){
+            // 助手函数不存在config(),是否是thinkphp6
+            return array();
+        }
+        $config             =   config("wz")?:config("wangzhan");
+        return $config;
+    }
+
 
     // 获取微信相关操作  公众号  1 小程序 2
     public function getWechat() {
@@ -91,11 +109,11 @@ class WzApi {
     public function getWxpay($notify_url = ""){
         return new_wxpay($notify_url);
     }
-    // cos和oss相关操作七牛  6/7/8
-    public function getOssCos(){
-        return (new OssCos($this->MyConfig));
+    // cos和oss相关操作七牛  6/7/8/9
+    public function getOssCos($file){
+        return (new Fileupload($file,$this->MyConfig));
     }
-    // 腾讯短信相关操作 9
+    // 腾讯短信相关操作 12
     public function getSms(){
         return (new exeSms($this->MyConfig));
     }

@@ -50,6 +50,7 @@ class Wxpay {
         $sign=$this->makeSign($data);
         $data['sign']=$sign;
         $xml=$this->toXml($data);
+
         $url = 'https://api.mch.weixin.qq.com/pay/unifiedorder';//接收xml数据的文件
         $header[] = "Content-type: text/xml";//定义content-type为xml,注意是数组
         $ch = curl_init ($url);
@@ -62,14 +63,15 @@ class Wxpay {
         $response = curl_exec($ch);
         if(curl_errno($ch)){
             // 显示报错信息；终止继续执行
-            die(curl_error($ch));
+            return $this->error(curl_error($ch));
         }
         curl_close($ch);
         $result=$this->toArray($response);
         // 显示错误信息
         if ($result['return_code']=='FAIL') {
-          $this->error(json_encode($result));
+          return $this->error(json_encode($result));
         }
+
         $result['sign']=$sign;
         $result['nonce_str']='test';
         return $result;
@@ -107,13 +109,13 @@ class Wxpay {
         $response = curl_exec($ch);
         if(curl_errno($ch)){
             // 显示报错信息；终止继续执行
-            die(curl_error($ch));
+            return $this->error(curl_error($ch));
         }
         curl_close($ch);
         $result=$this->toArray($response);
         // 显示错误信息
         if ($result['return_code']=='FAIL') {
-            $this->error(json_encode($result));
+            return $this->error(json_encode($result));
         }
         $result['sign']=$sign;
         $result['nonce_str']='test';
@@ -266,7 +268,7 @@ class Wxpay {
         $decodeurl=urldecode($result['code_url']);
         // qrcode($decodeurl);  这里需要生成二维码  待处理 2018-06-26
     }
-//================================微信退款 2018-07-26   ===============================
+//================================微信退款 2018-07-26   漾程式写的微信退款===============================
     /**
     *   @var order_id      退款订单号
     *   @var pays          订单总金额

@@ -2,13 +2,16 @@
 namespace wangzhan;
 
 class Error {
-
+	public static $error 	=	array();
 	public function __construct($text,$code,$error){
 		$arr 				=	array();
 		$arr['text']		=	$text;
 		$arr['code']		=	$code;
 		$arr['error']		=	$error;
-		self::dump($arr);exit();
+		self::$error 		=	json_encode($arr);
+		return false;
+		// self::dump($arr);exit();
+
     }
 
     /**
